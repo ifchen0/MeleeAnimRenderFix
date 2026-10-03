@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModMetaData>
+  <name>Melee Animation Render Fix</name>
+  <author>ifchen0</author>
+  <packageId>ifchen0.meleeanimrenderfix</packageId>
+  <supportedVersions><li>1.6</li></supportedVersions>
+  <description>Unofficial fix for Melee Animation (steamcommunity.com/sharedfiles/filedetails/?id=2944488802).
+
+Fixes this error repeating every frame:
+[MeleeAnim] Rendering exception when doing animation ...
+System.NullReferenceException
+  at Verse.PawnRenderNodeWorker_Body_Tattoo.CanDrawNow
+  at Verse.PawnRenderTree.ParallelPreDraw
+  at AM.Patches.Patch_PawnRenderer_RenderPawnAt.Prefix
+
+Also fixes random pawns flashing bright for a single frame and losing their shadow while any melee animation is playing (even when paused).
+
+Symptoms of the error: the game becomes choppy (pawns appear to move at low FPS). It happens most often when you open a map where fighting started while you were looking elsewhere (e.g. Dynamic Diplomacy NPC battles).
+
+Cause:
+1) Melee Animation's RenderPawnAt prefix uses the renderer's cached pre-render results without checking that they were filled. If the pawn was not pre-rendered this frame, the draw parameters are empty and the render tree throws.
+2) An animation only honours its pending destroy after drawing its pawns, so once the draw throws, a finished animation is never removed and the error repeats forever.
+3) Melee Animation looks up "is this pawn animated?" through a one-entry cache shared by all threads, and reads it outside its lock. RimWorld 1.6 pre-renders pawns on several threads at once, so a pawn can receive another pawn's animation. Melee Animation then reports it as invisible, and for that frame it is drawn with the invisibility shader and no shadow.
+
+Fix:
+1) Right before Melee Animation draws an animated pawn, fill the missing results the same way vanilla RenderPawnAt does. Pawns not being animated are not touched.
+2) If an animation's draw throws after it has finished, it is destroyed anyway.
+3) The lookup goes straight to Melee Animation's own pawn-to-animation table instead of the shared cache.
+
+Performance:
+- While a pawn is being animated (duels, executions, grapples), Melee Animation rebuilds the pawn's whole render tree on every draw, several times per frame. With Humanoid Alien Races this can cost several milliseconds per frame for a single duel. The rebuild is now skipped except for severed heads, which need it; the render tree still refreshes its draw requests whenever the pose changes.
+
+Minor log cleanups:
+- "AM.Events.XxxEvent must be instantiated using the ScriptableObject.CreateInstance method": animation events are now created with ScriptableObject.CreateInstance.
+- "[MeleeAnim] Started twice!" when loading a save with an animation in progress: the redundant start call is skipped quietly.
+
+Notes:
+- Safe to add to or remove from an existing save.
+- If an animation is already stuck before adding this mod, switching to another map and back clears it.</description>
+  <modDependencies>
+    <li><packageId>brrainz.harmony</packageId><displayName>Harmony</displayName><steamWorkshopUrl>steam://url/CommunityFilePage/2009463077</steamWorkshopUrl></li>
+    <li><packageId>co.uk.epicguru.meleeanimation</packageId><displayName>Melee Animation</displayName><steamWorkshopUrl>steam://url/CommunityFilePage/2944488802</steamWorkshopUrl></li>
+  </modDependencies>
+  <loadAfter>
+    <li>brrainz.harmony</li>
+    <li>co.uk.epicguru.meleeanimation</li>
+  </loadAfter>
+</ModMetaData>
