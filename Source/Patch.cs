@@ -166,6 +166,21 @@ namespace MeleeAnimRenderFix
     }
 
     /// <summary>
+    /// SweepMesh.Rebuild assigns vertices before indices without clearing the mesh. When an animation's time jumps back
+    /// (e.g. a looping duel), PartWithSweep rebuilds the trail with fewer vertices than the old index buffer references,
+    /// so Unity rejects the vertices ("Mesh.vertices is too small") and then the colors ("Mesh.colors is out of bounds").
+    /// Clears the mesh first so the new arrays are always accepted.
+    /// </summary>
+    [HarmonyPatch(typeof(AM.Sweep.SweepMesh<AM.Sweep.PartWithSweep.Data>), nameof(AM.Sweep.SweepMesh<AM.Sweep.PartWithSweep.Data>.Rebuild))]
+    public static class Patch_SweepMesh_Rebuild
+    {
+        public static void Prefix(AM.Sweep.SweepMesh<AM.Sweep.PartWithSweep.Data> __instance)
+        {
+            __instance.Mesh.Clear();
+        }
+    }
+
+    /// <summary>
     /// AnimRenderer.Draw only honours delayedDestroy after drawing the pawns, so one draw exception keeps a finished
     /// animation alive forever. Destroys it anyway and lets the exception through for Melee Animation to log.
     /// </summary>

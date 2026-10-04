@@ -33,6 +33,7 @@ Performance:
 Minor log cleanups:
 - "AM.Events.XxxEvent must be instantiated using the ScriptableObject.CreateInstance method": animation events are now created with ScriptableObject.CreateInstance.
 - "[MeleeAnim] Started twice!" when loading a save with an animation in progress: the redundant start call is skipped quietly.
+- "Mesh.vertices is too small" / "Mesh.colors is out of bounds" during duels: the weapon trail mesh is cleared before it is rebuilt with fewer points.
 
 Notes:
 - Safe to add to or remove from an existing save.
