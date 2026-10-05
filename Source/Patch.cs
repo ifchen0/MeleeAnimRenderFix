@@ -181,6 +181,23 @@ namespace MeleeAnimRenderFix
     }
 
     /// <summary>
+    /// With Simple Sidearms, GetFirstMeleeWeapon can return a melee sidearm from the inventory while a ranged weapon is
+    /// equipped. OutcomeUtility.Damage then retries TryGetMeleeVerb 1000 times looking for a verb from that sidearm,
+    /// which can never be offered because only the primary weapon provides verbs, logs "Failed to find random verb"
+    /// and skips the damage. Uses the primary weapon (or bare hands) for the damage instead.
+    /// </summary>
+    [HarmonyPatch(typeof(AM.Outcome.OutcomeUtility), "Damage")]
+    public static class Patch_OutcomeUtility_Damage
+    {
+        public static void Prefix(Pawn attacker, ref AM.Outcome.OutcomeUtility.AdditionalArgs args)
+        {
+            ThingWithComps primary = attacker?.equipment?.Primary;
+            if (args.Weapon != null && args.Weapon != primary)
+                args.Weapon = primary;
+        }
+    }
+
+    /// <summary>
     /// AnimRenderer.Draw only honours delayedDestroy after drawing the pawns, so one draw exception keeps a finished
     /// animation alive forever. Destroys it anyway and lets the exception through for Melee Animation to log.
     /// </summary>
