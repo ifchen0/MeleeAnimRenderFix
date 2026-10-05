@@ -3,6 +3,7 @@
   <name>Melee Animation Render Fix</name>
   <author>ifchen0</author>
   <packageId>ifchen0.meleeanimrenderfix</packageId>
+  <url>https://github.com/ifchen0/MeleeAnimRenderFix</url>
   <supportedVersions><li>1.6</li></supportedVersions>
   <description>Unofficial fix for Melee Animation.
 

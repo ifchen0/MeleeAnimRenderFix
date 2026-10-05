@@ -34,4 +34,4 @@ Symptoms of the error: the game becomes choppy (pawns appear to move at low FPS)
 [*]Load after Melee Animation.
 [/list]
 [hr][/hr]
-This mod was developed with the help of AI coding tools (Claude Code). Full source code is included in the Source folder for review.
+This mod was developed with the help of AI coding tools (Claude Code). Full source code is included in the Source folder and on [url=https://github.com/ifchen0/MeleeAnimRenderFix]GitHub[/url] for review.
