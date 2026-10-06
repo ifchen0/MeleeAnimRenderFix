@@ -231,14 +231,17 @@ namespace MeleeAnimRenderFix
     /// <summary>
     /// Hovering an execution or lasso option in the drafted float menu (for disabled ones, the "?" cooldown icon) draws
     /// the lasso range ring every frame, running a line-of-sight check for each of up to about 1,800 cells in range.
-    /// Same ring and tooltip, but the visible cells are cached and only recomputed when the pawn moves, the radius
-    /// changes or once a second (so opened doors and new walls still show up).
+    /// Same ring and tooltip, but the visible cells are cached as offsets from the pawn and drawn around its current
+    /// position. Line of sight is recomputed at most every 15 frames while the pawn walks, and once a second otherwise
+    /// (so opened doors and new walls still show up); a new pawn, map or radius recomputes it immediately.
     /// </summary>
     [HarmonyPatch(typeof(AM.UI.DraftedFloatMenuOptionsUI), "HoverAction")]
     public static class Patch_DraftedFloatMenuOptionsUI_HoverAction
     {
+        private const int MovedRefreshFrames = 15;
         private const int RefreshFrames = 60;
 
+        private static readonly List<IntVec3> ringOffsets = new List<IntVec3>();
         private static readonly List<IntVec3> ringCells = new List<IntVec3>();
         private static Pawn cachedPawn;
         private static Map cachedMap;
@@ -246,10 +249,31 @@ namespace MeleeAnimRenderFix
         private static float cachedRadius = -1f;
         private static int cachedFrame = -RefreshFrames;
 
+        private static bool failed;
+
         public static bool Prefix(Pawn pawn, string tt)
         {
+            if (failed)
+                return true;
+            try
+            {
+                Hover(pawn, tt);
+            }
+            catch (Exception e)
+            {
+                // Melee Animation changed something this replacement relies on; fall back to its own HoverAction.
+                failed = true;
+                Log.Warning($"[Melee Animation Render Fix] Lasso range ring cache disabled (Melee Animation changed?): {e.Message}");
+                return true;
+            }
+            return false;
+        }
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+        private static void Hover(Pawn pawn, string tt)
+        {
             if (pawn == null || !pawn.Spawned)
-                return false;
+                return;
 
             if (Event.current.type == EventType.Repaint && AM.Extensions.TryGetLasso(pawn) != null)
             {
@@ -257,7 +281,14 @@ namespace MeleeAnimRenderFix
                 if (radius <= GenRadial.MaxRadialPatternRadius)
                 {
                     RefreshRing(pawn, radius);
-                    AM.Extensions.GetAnimManager(pawn).AddPostDraw(() => GenDraw.DrawFieldEdges(ringCells, Color.yellow));
+                    IntVec3 center = pawn.Position;
+                    AM.Extensions.GetAnimManager(pawn).AddPostDraw(() =>
+                    {
+                        ringCells.Clear();
+                        for (int i = 0; i < ringOffsets.Count; i++)
+                            ringCells.Add(center + ringOffsets[i]);
+                        GenDraw.DrawFieldEdges(ringCells, Color.yellow);
+                    });
                 }
             }
 
@@ -266,15 +297,15 @@ namespace MeleeAnimRenderFix
                 Vector2 mouse = Event.current.mousePosition;
                 TooltipHandler.TipRegion(new Rect(mouse.x - 1f, mouse.y - 1f, 3f, 3f), tt);
             }
-            return false;
         }
 
         private static void RefreshRing(Pawn pawn, float radius)
         {
             Map map = pawn.Map;
             IntVec3 center = pawn.Position;
-            if (pawn == cachedPawn && map == cachedMap && center == cachedCenter && radius == cachedRadius
-                && Time.frameCount - cachedFrame < RefreshFrames)
+            int age = Time.frameCount - cachedFrame;
+            bool sameTarget = pawn == cachedPawn && map == cachedMap && radius == cachedRadius;
+            if (sameTarget && age < (center == cachedCenter ? RefreshFrames : MovedRefreshFrames))
                 return;
 
             cachedPawn = pawn;
@@ -283,14 +314,14 @@ namespace MeleeAnimRenderFix
             cachedRadius = radius;
             cachedFrame = Time.frameCount;
 
-            ringCells.Clear();
+            ringOffsets.Clear();
             Func<IntVec3, bool> validator = c => AM.Controller.ActionController.LOSValidator(c, map);
             int count = GenRadial.NumCellsInRadius(radius);
             for (int i = 0; i < count; i++)
             {
-                IntVec3 cell = center + GenRadial.RadialPattern[i];
-                if (GenSight.LineOfSight(center, cell, map, false, validator))
-                    ringCells.Add(cell);
+                IntVec3 offset = GenRadial.RadialPattern[i];
+                if (GenSight.LineOfSight(center, center + offset, map, false, validator))
+                    ringOffsets.Add(offset);
             }
         }
     }
