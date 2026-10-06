@@ -13,7 +13,20 @@ namespace MeleeAnimRenderFix
     {
         static Startup()
         {
-            new Harmony("ifchen0.meleeanimrenderfix").PatchAll();
+            // Patch each class on its own: PatchAll stops at the first failure, so one renamed Melee Animation
+            // method would silently drop every patch declared after it.
+            var harmony = new Harmony("ifchen0.meleeanimrenderfix");
+            foreach (Type type in AccessTools.GetTypesFromAssembly(typeof(Startup).Assembly))
+            {
+                try
+                {
+                    harmony.CreateClassProcessor(type).Patch();
+                }
+                catch (Exception e)
+                {
+                    Log.Warning($"[Melee Animation Render Fix] {type.Name} skipped (Melee Animation changed?): {e.InnerException?.Message ?? e.Message}");
+                }
+            }
             EventFactoryFix.Apply();
         }
     }
