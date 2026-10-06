@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
+using RimWorld;
 using UnityEngine;
 using Verse;
+using Verse.AI;
 
 namespace MeleeAnimRenderFix
 {
@@ -207,6 +209,89 @@ namespace MeleeAnimRenderFix
             ThingWithComps primary = attacker?.equipment?.Primary;
             if (args.Weapon != null && args.Weapon != primary)
                 args.Weapon = primary;
+        }
+    }
+
+    /// <summary>
+    /// MapPawnProcessor picks targets for automatic lassos and executions from the hostile targets cache without
+    /// checking invisibility, so pawns lasso enemies they cannot perceive: psychically invisible pawns and hidden
+    /// Anomaly entities such as revenants. Both use HediffComp_Invisibility, which vanilla targeting respects through
+    /// IsPsychologicallyInvisible. Drops such targets here; manual orders are left alone.
+    /// </summary>
+    [HarmonyPatch("AM.Processing.MapPawnProcessor", "TargetFilter")]
+    public static class Patch_MapPawnProcessor_TargetFilter
+    {
+        public static void Postfix(IAttackTarget target, ref bool __result)
+        {
+            if (__result && target.Thing is Pawn pawn && pawn.IsPsychologicallyInvisible())
+                __result = false;
+        }
+    }
+
+    /// <summary>
+    /// Hovering an execution or lasso option in the drafted float menu (for disabled ones, the "?" cooldown icon) draws
+    /// the lasso range ring every frame, running a line-of-sight check for each of up to about 1,800 cells in range.
+    /// Same ring and tooltip, but the visible cells are cached and only recomputed when the pawn moves, the radius
+    /// changes or once a second (so opened doors and new walls still show up).
+    /// </summary>
+    [HarmonyPatch(typeof(AM.UI.DraftedFloatMenuOptionsUI), "HoverAction")]
+    public static class Patch_DraftedFloatMenuOptionsUI_HoverAction
+    {
+        private const int RefreshFrames = 60;
+
+        private static readonly List<IntVec3> ringCells = new List<IntVec3>();
+        private static Pawn cachedPawn;
+        private static Map cachedMap;
+        private static IntVec3 cachedCenter;
+        private static float cachedRadius = -1f;
+        private static int cachedFrame = -RefreshFrames;
+
+        public static bool Prefix(Pawn pawn, string tt)
+        {
+            if (pawn == null || !pawn.Spawned)
+                return false;
+
+            if (Event.current.type == EventType.Repaint && AM.Extensions.TryGetLasso(pawn) != null)
+            {
+                float radius = pawn.GetStatValue(AM.AM_DefOf.AM_GrappleRadius);
+                if (radius <= GenRadial.MaxRadialPatternRadius)
+                {
+                    RefreshRing(pawn, radius);
+                    AM.Extensions.GetAnimManager(pawn).AddPostDraw(() => GenDraw.DrawFieldEdges(ringCells, Color.yellow));
+                }
+            }
+
+            if (tt != null)
+            {
+                Vector2 mouse = Event.current.mousePosition;
+                TooltipHandler.TipRegion(new Rect(mouse.x - 1f, mouse.y - 1f, 3f, 3f), tt);
+            }
+            return false;
+        }
+
+        private static void RefreshRing(Pawn pawn, float radius)
+        {
+            Map map = pawn.Map;
+            IntVec3 center = pawn.Position;
+            if (pawn == cachedPawn && map == cachedMap && center == cachedCenter && radius == cachedRadius
+                && Time.frameCount - cachedFrame < RefreshFrames)
+                return;
+
+            cachedPawn = pawn;
+            cachedMap = map;
+            cachedCenter = center;
+            cachedRadius = radius;
+            cachedFrame = Time.frameCount;
+
+            ringCells.Clear();
+            Func<IntVec3, bool> validator = c => AM.Controller.ActionController.LOSValidator(c, map);
+            int count = GenRadial.NumCellsInRadius(radius);
+            for (int i = 0; i < count; i++)
+            {
+                IntVec3 cell = center + GenRadial.RadialPattern[i];
+                if (GenSight.LineOfSight(center, cell, map, false, validator))
+                    ringCells.Add(cell);
+            }
         }
     }
 
