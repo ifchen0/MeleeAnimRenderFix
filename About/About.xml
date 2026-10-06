@@ -30,6 +30,10 @@ Fix:
 
 Performance:
 - While a pawn is being animated (duels, executions, grapples), Melee Animation rebuilds the pawn's whole render tree on every draw, several times per frame. With Humanoid Alien Races this can cost several milliseconds per frame for a single duel. The rebuild is now skipped except for severed heads, which need it; the render tree still refreshes its draw requests whenever the pose changes.
+- Hovering an execution or lasso option (or its "?" cooldown icon) in the drafted right-click menu recalculated the lasso range ring with a line-of-sight check per cell every frame, making the menu stutter. The ring cells are now cached.
+
+Automatic lassos:
+- Pawns no longer automatically lasso or lasso-execute psychically invisible pawns or hidden Anomaly entities (e.g. revenants), matching vanilla targeting. Manual orders are unchanged.
 
 Minor log cleanups:
 - "AM.Events.XxxEvent must be instantiated using the ScriptableObject.CreateInstance method": animation events are now created with ScriptableObject.CreateInstance.

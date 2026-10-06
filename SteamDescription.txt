@@ -23,6 +23,14 @@ Symptoms of the error: the game becomes choppy (pawns appear to move at low FPS)
 
 [b]Fix:[/b] The rebuild is now skipped except for severed heads, which genuinely need it. Vanilla's render tree already refreshes its draw requests whenever the pose, facing or render flags change, so animations still look the same. In a full-scale battle the same measurement dropped from about 8 ms per frame to under 0.1 ms.
 
+[h2]Performance: drafted right-click menu lag[/h2]Hovering an execution or lasso option in the drafted right-click menu (for unavailable ones, the "?" cooldown icon) draws the lasso range ring. Melee Animation recalculated that ring every frame, with a line-of-sight check for every cell in range (up to about 1,800 cells with the best lasso), so the menu stuttered while hovered.
+
+[b]Fix:[/b] The visible cells are cached and only recalculated when the pawn moves, the lasso range changes, or once a second (so opened doors and new walls still show). The ring looks the same.
+
+[h2]Automatic lassos ignored invisibility[/h2]Pawns with a lasso automatically lassoed (and lasso-executed) enemies they should not be able to perceive: psychically invisible pawns and hidden Anomaly entities such as revenants. Vanilla targeting ignores both.
+
+[b]Fix:[/b] Invisible pawns are removed from the automatic lasso and execution target list. Once revealed, they can be targeted again. Manual orders from the right-click menu are unchanged.
+
 [h2]Minor log cleanups[/h2][list]
 [*]"AM.Events.XxxEvent must be instantiated using the ScriptableObject.CreateInstance method": animation events are now created with [i]ScriptableObject.CreateInstance[/i].
 [*]"[MeleeAnim] Started twice!" when loading a save with an animation in progress: the redundant start call is skipped quietly.
