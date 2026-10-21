@@ -327,6 +327,49 @@ namespace MeleeAnimRenderFix
     }
 
     /// <summary>
+    /// Melee Animation's exported curves hold constant values (facing, part visibility) as stepped keys with infinite
+    /// tangents. On RimWorld 1.7's Unity a stepped segment between two equal values no longer evaluates to that value,
+    /// so the duel bow faces north (direction 0) and the second duelist's weapon is hidden (active below 0.5).
+    /// Gives those segments flat tangents instead, which evaluate to the same constant on any Unity version.
+    /// </summary>
+    [HarmonyPatch(typeof(AM.Data.Model.CurveModel), nameof(AM.Data.Model.CurveModel.ToAnimationCurve))]
+    public static class Patch_CurveModel_ToAnimationCurve
+    {
+        private static int flattened;
+        private static int misEvaluated;
+        private static int lastLoggedFrame = -1;
+
+        public static void Postfix(AnimationCurve __result)
+        {
+            UnityEngine.Keyframe[] keys = __result.keys;
+            bool changed = false;
+            for (int i = 0; i + 1 < keys.Length; i++)
+            {
+                if (!float.IsInfinity(keys[i].outTangent) || keys[i].value != keys[i + 1].value)
+                    continue;
+                float mid = (keys[i].time + keys[i + 1].time) * 0.5f;
+                if (__result.Evaluate(mid) != keys[i].value)
+                    misEvaluated++;
+                keys[i].outTangent = 0f;
+                keys[i + 1].inTangent = 0f;
+                flattened++;
+                changed = true;
+            }
+            if (!changed)
+                return;
+            __result.keys = keys;
+
+            // Animations load lazily, so report once per frame rather than once per curve.
+            if (lastLoggedFrame != Time.frameCount)
+            {
+                lastLoggedFrame = Time.frameCount;
+                LongEventHandler.ExecuteWhenFinished(() =>
+                    Log.Message($"[Melee Animation Render Fix] Flattened {flattened} stepped curve segments so far ({misEvaluated} evaluated wrong before)."));
+            }
+        }
+    }
+
+    /// <summary>
     /// AnimRenderer.Draw only honours delayedDestroy after drawing the pawns, so one draw exception keeps a finished
     /// animation alive forever. Destroys it anyway and lets the exception through for Melee Animation to log.
     /// </summary>

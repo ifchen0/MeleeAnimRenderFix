@@ -35,6 +35,9 @@ Performance:
 Automatic lassos:
 - Pawns no longer automatically lasso or lasso-execute psychically invisible pawns or hidden Anomaly entities (e.g. revenants), matching vanilla targeting. Manual orders are unchanged.
 
+RimWorld 1.7:
+- Pawns bowed facing north before a friendly duel and one duelist's weapon vanished, because 1.7's newer Unity evaluates Melee Animation's stepped curve keys wrongly. They are now converted to flat keys with the same value. No change on 1.6.
+
 Minor log cleanups:
 - "AM.Events.XxxEvent must be instantiated using the ScriptableObject.CreateInstance method": animation events are now created with ScriptableObject.CreateInstance.
 - "[MeleeAnim] Started twice!" when loading a save with an animation in progress: the redundant start call is skipped quietly.

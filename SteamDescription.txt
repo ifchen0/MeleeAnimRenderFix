@@ -33,6 +33,10 @@ Note: most of the stutter while any right-click menu is open comes from vanilla 
 
 [b]Fix:[/b] Invisible pawns are removed from the automatic lasso and execution target list. Once revealed, they can be targeted again. Manual orders from the right-click menu are unchanged.
 
+[h2]RimWorld 1.7: duel bow faces north, weapon disappears[/h2]On 1.7, pawns bowed facing north before a friendly duel, and one duelist's weapon vanished during the duel. Melee Animation stores fixed facing and visibility as stepped curve keys, which 1.7's newer Unity evaluates wrongly.
+
+[b]Fix:[/b] Those keys are converted to flat ones with the same value when an animation loads. No change on 1.6.
+
 [h2]Minor log cleanups[/h2][list]
 [*]"AM.Events.XxxEvent must be instantiated using the ScriptableObject.CreateInstance method": animation events are now created with [i]ScriptableObject.CreateInstance[/i].
 [*]"[MeleeAnim] Started twice!" when loading a save with an animation in progress: the redundant start call is skipped quietly.
