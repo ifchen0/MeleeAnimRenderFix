@@ -213,6 +213,26 @@ namespace MeleeAnimRenderFix
     }
 
     /// <summary>
+    /// Melee Animation logs two routine combat outcomes through Core.Error, which opens the log window in dev mode:
+    /// "has bad job" when another system ends a pawn's job mid-animation (the animation is just cancelled), and
+    /// "Accidentally killed or downed" when difficulty or hediffs make an injuring hit lethal. Logs those as warnings;
+    /// every other Melee Animation error is left as is.
+    /// </summary>
+    [HarmonyPatch(typeof(AM.Core), nameof(AM.Core.Error))]
+    public static class Patch_Core_Error
+    {
+        public static bool Prefix(string msg, Exception e)
+        {
+            if (e != null || msg == null)
+                return true;
+            if (!msg.Contains(" has bad job: ") && !msg.StartsWith("Accidentally killed or downed "))
+                return true;
+            AM.Core.Warn(msg);
+            return false;
+        }
+    }
+
+    /// <summary>
     /// MapPawnProcessor picks targets for automatic lassos and executions from the hostile targets cache without
     /// checking invisibility, so pawns lasso enemies they cannot perceive: psychically invisible pawns and hidden
     /// Anomaly entities such as revenants. Both use HediffComp_Invisibility, which vanilla targeting respects through
