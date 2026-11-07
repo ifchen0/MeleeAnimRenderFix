@@ -33,7 +33,7 @@ Performance:
 - Hovering an execution or lasso option (or its "?" cooldown icon) in the right-click menu recalculated the lasso range ring with a line-of-sight check per cell every frame. The visible cells are now cached and refreshed at most 4 times a second while the pawn walks.
 
 Automatic lassos:
-- Pawns no longer automatically lasso or lasso-execute psychically invisible pawns or hidden Anomaly entities (e.g. revenants), matching vanilla targeting. Manual orders are unchanged.
+- Pawns no longer automatically lasso or lasso-execute psychically invisible pawns or hidden Anomaly entities (e.g. revenants), matching vanilla targeting, nor sleeping targets (dormant mechanoids, sleeping pawns). Manual orders are unchanged.
 
 RimWorld 1.7:
 - Pawns bowed facing north before a friendly duel and one duelist's weapon vanished, because 1.7's newer Unity evaluates Melee Animation's stepped curve keys wrongly. They are now converted to flat keys with the same value. No change on 1.6.

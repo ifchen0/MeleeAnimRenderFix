@@ -236,15 +236,24 @@ namespace MeleeAnimRenderFix
     /// MapPawnProcessor picks targets for automatic lassos and executions from the hostile targets cache without
     /// checking invisibility, so pawns lasso enemies they cannot perceive: psychically invisible pawns and hidden
     /// Anomaly entities such as revenants. Both use HediffComp_Invisibility, which vanilla targeting respects through
-    /// IsPsychologicallyInvisible. Drops such targets here; manual orders are left alone.
+    /// IsPsychologicallyInvisible. Also drops sleeping targets (dormant mechanoids and pawns asleep in a job), which
+    /// otherwise get pulled over and then quietly walk back to their spot. Manual orders are left alone.
     /// </summary>
     [HarmonyPatch("AM.Processing.MapPawnProcessor", "TargetFilter")]
     public static class Patch_MapPawnProcessor_TargetFilter
     {
         public static void Postfix(IAttackTarget target, ref bool __result)
         {
-            if (__result && target.Thing is Pawn pawn && pawn.IsPsychologicallyInvisible())
+            if (__result && target.Thing is Pawn pawn && (pawn.IsPsychologicallyInvisible() || IsSleeping(pawn)))
                 __result = false;
+        }
+
+        private static bool IsSleeping(Pawn pawn)
+        {
+            CompCanBeDormant dormant = pawn.GetComp<CompCanBeDormant>();
+            if (dormant != null && !dormant.Awake)
+                return true;
+            return pawn.jobs?.curDriver?.asleep == true;
         }
     }
 

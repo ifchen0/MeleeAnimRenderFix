@@ -29,9 +29,9 @@ Symptoms of the error: the game becomes choppy (pawns appear to move at low FPS)
 
 Note: most of the stutter while any right-click menu is open comes from vanilla regenerating the whole menu every 4th frame, not from Melee Animation.
 
-[h2]Automatic lassos ignored invisibility[/h2]Pawns with a lasso automatically lassoed (and lasso-executed) enemies they should not be able to perceive: psychically invisible pawns and hidden Anomaly entities such as revenants. Vanilla targeting ignores both.
+[h2]Automatic lassos ignored invisibility[/h2]Pawns with a lasso automatically lassoed (and lasso-executed) enemies they should not be able to perceive: psychically invisible pawns and hidden Anomaly entities such as revenants. Vanilla targeting ignores both. Sleeping targets (dormant mechanoids, sleeping pawns) were lassoed too, then quietly walked back to where they were.
 
-[b]Fix:[/b] Invisible pawns are removed from the automatic lasso and execution target list. Once revealed, they can be targeted again. Manual orders from the right-click menu are unchanged.
+[b]Fix:[/b] Invisible and sleeping pawns are removed from the automatic lasso and execution target list. Once revealed or awake, they can be targeted again. Manual orders from the right-click menu are unchanged.
 
 [h2]RimWorld 1.7: duel bow faces north, weapon disappears[/h2]On 1.7, pawns bowed facing north before a friendly duel, and one duelist's weapon vanished during the duel. Melee Animation stores fixed facing and visibility as stepped curve keys, which 1.7's newer Unity evaluates wrongly.
 
