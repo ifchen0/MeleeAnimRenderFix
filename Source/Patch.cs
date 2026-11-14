@@ -7,6 +7,7 @@ using RimWorld;
 using UnityEngine;
 using Verse;
 using Verse.AI;
+using Verse.AI.Group;
 
 namespace MeleeAnimRenderFix
 {
@@ -254,6 +255,21 @@ namespace MeleeAnimRenderFix
             if (dormant != null && !dormant.Awake)
                 return true;
             return pawn.jobs?.curDriver?.asleep == true;
+        }
+    }
+
+    /// <summary>
+    /// Automatic friendly duels pick a partner without checking whether it is busy with a ritual, gathering or other
+    /// group activity, and start the duel job on it directly. A psychic ritual invoker pulled away drops its offering
+    /// and the ritual fails. Pawns that belong to a lord are no longer considered for automatic duels.
+    /// </summary>
+    [HarmonyPatch(typeof(AM.AutoDuel.AutoFriendlyDuelMapComp), nameof(AM.AutoDuel.AutoFriendlyDuelMapComp.CanPawnDuel))]
+    public static class Patch_AutoFriendlyDuelMapComp_CanPawnDuel
+    {
+        public static void Postfix(Pawn pawn, ref bool __result)
+        {
+            if (__result && pawn.GetLord() != null)
+                __result = false;
         }
     }
 

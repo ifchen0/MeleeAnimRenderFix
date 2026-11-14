@@ -33,6 +33,10 @@ Note: most of the stutter while any right-click menu is open comes from vanilla 
 
 [b]Fix:[/b] Invisible and sleeping pawns are removed from the automatic lasso and execution target list. Once revealed or awake, they can be targeted again. Manual orders from the right-click menu are unchanged.
 
+[h2]Automatic duels interrupted rituals[/h2]An automatic friendly duel picks its partner without checking whether that pawn is busy, and starts the duel on them directly. A psychic ritual invoker pulled into a duel dropped the offering, and the ritual failed for a missing offering.
+
+[b]Fix:[/b] Pawns that are part of a ritual, gathering or other group activity are no longer chosen for automatic friendly duels. Duels you start yourself are unchanged.
+
 [h2]RimWorld 1.7: duel bow faces north, weapon disappears[/h2]On 1.7, pawns bowed facing north before a friendly duel, and one duelist's weapon vanished during the duel. Melee Animation stores fixed facing and visibility as stepped curve keys, which 1.7's newer Unity evaluates wrongly.
 
 [b]Fix:[/b] Those keys are converted to flat ones with the same value when an animation loads. No change on 1.6.
