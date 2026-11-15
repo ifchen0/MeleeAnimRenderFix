@@ -34,6 +34,7 @@ Performance:
 
 Automatic lassos:
 - Pawns no longer automatically lasso or lasso-execute psychically invisible pawns or hidden Anomaly entities (e.g. revenants), matching vanilla targeting, nor sleeping targets (dormant mechanoids, sleeping pawns). Manual orders are unchanged.
+- The "Max Building Fill For Lasso Drag" setting only affected the range ring, never the lasso itself (RimWorld's line-of-sight check drops it for single-cell targets), and even the ring let any walkable cell through, so sandbags and barricades were never cover. Now the lasso uses it too, and any building with a fill above the setting blocks the lasso (open doors still pass). At the default 20% furniture such as chairs, beds and tables blocks it too; 50% lets furniture through but not sandbags or barricades.
 
 Automatic friendly duels:
 - Pawns busy with a ritual, gathering or other group activity are no longer pulled into an automatic friendly duel. A psychic ritual invoker taken away dropped the offering and the ritual failed.

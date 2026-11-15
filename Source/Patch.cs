@@ -259,6 +259,66 @@ namespace MeleeAnimRenderFix
     }
 
     /// <summary>
+    /// The lasso line-of-sight validator is meant to block a pull over any building whose fill exceeds the "Max Building
+    /// Fill For Lasso Drag" setting, but it also lets through every cell that is walkable. Sandbags and barricades are
+    /// walkable, so they never blocked a lasso whatever the setting was; only impassable partial buildings did. The
+    /// walkable bypass is dropped so the setting works as described: fill above the setting blocks, open doors pass.
+    /// </summary>
+    [HarmonyPatch(typeof(AM.Controller.ActionController), "CheckCell")]
+    public static class Patch_ActionController_CheckCell
+    {
+        public static bool Prefix(IntVec3 cell, Map map, ref bool __result)
+        {
+            Building edifice = cell.GetEdifice(map);
+            __result = edifice == null
+                || edifice.def.fillPercent <= AM.Core.Settings.MaxFillPctForLasso
+                || (edifice is Building_Door door && door.Open);
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Melee Animation passes its cover validator (CheckCell above) to GenSight.LineOfSightToThing, but vanilla drops the
+    /// validator for 1x1 things, which covers nearly every pawn. So the cover setting only ever affected the range ring,
+    /// never the actual lasso check. These calls are redirected to a version that keeps the validator.
+    /// </summary>
+    [HarmonyPatch]
+    public static class Patch_Grapple_LineOfSightToThing
+    {
+        private static readonly MethodInfo LineOfSightToThing = AccessTools.Method(typeof(GenSight), nameof(GenSight.LineOfSightToThing));
+
+        public static IEnumerable<MethodBase> TargetMethods()
+        {
+            yield return AccessTools.Method(typeof(AM.Controller.ActionController), nameof(AM.Controller.ActionController.GetGrappleReport));
+            yield return AccessTools.Method(typeof(AM.Grappling.JobDriver_GrapplePawn), "TickPreEnsnare");
+        }
+
+        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, MethodBase __originalMethod)
+        {
+            int replaced = 0;
+            foreach (CodeInstruction instruction in instructions)
+            {
+                if (instruction.Calls(LineOfSightToThing))
+                {
+                    instruction.opcode = OpCodes.Call;
+                    instruction.operand = AccessTools.Method(typeof(Patch_Grapple_LineOfSightToThing), nameof(LineOfSightToThingWithValidator));
+                    replaced++;
+                }
+                yield return instruction;
+            }
+            if (replaced == 0)
+                Log.Warning($"[Melee Animation Render Fix] No LineOfSightToThing call found in {__originalMethod.DeclaringType.Name}.{__originalMethod.Name}; lasso cover check not applied there.");
+        }
+
+        public static bool LineOfSightToThingWithValidator(IntVec3 start, Thing t, Map map, bool skipFirstCell, Func<IntVec3, bool> validator)
+        {
+            if (t.def.size == IntVec2.One)
+                return GenSight.LineOfSight(start, t.Position, map, skipFirstCell, validator);
+            return GenSight.LineOfSightToThing(start, t, map, skipFirstCell, validator);
+        }
+    }
+
+    /// <summary>
     /// Automatic friendly duels pick a partner without checking whether it is busy with a ritual, gathering or other
     /// group activity, and start the duel job on it directly. A psychic ritual invoker pulled away drops its offering
     /// and the ritual fails. Pawns that belong to a lord are no longer considered for automatic duels.
