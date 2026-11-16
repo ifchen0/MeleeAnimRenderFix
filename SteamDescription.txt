@@ -45,6 +45,10 @@ Note: most of the stutter while any right-click menu is open comes from vanilla 
 
 [b]Fix:[/b] Those keys are converted to flat ones with the same value when an animation loads. No change on 1.6.
 
+[h2]RimWorld 1.7: weapon trails look short[/h2]Since RimWorld 1.7.5011, weapon trails were drawn only in short fragments. Melee Animation builds trails from four-sided shapes, and the new 1.7 engine reads them as triangles, so most of the trail ends up misaligned.
+
+[b]Fix:[/b] On 1.7, each shape is split into two triangles before the trail is drawn. No change on 1.6.
+
 [h2]Minor log cleanups[/h2][list]
 [*]"AM.Events.XxxEvent must be instantiated using the ScriptableObject.CreateInstance method": animation events are now created with [i]ScriptableObject.CreateInstance[/i].
 [*]"[MeleeAnim] Started twice!" when loading a save with an animation in progress: the redundant start call is skipped quietly.

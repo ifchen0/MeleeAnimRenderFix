@@ -186,13 +186,56 @@ namespace MeleeAnimRenderFix
     /// (e.g. a looping duel), PartWithSweep rebuilds the trail with fewer vertices than the old index buffer references,
     /// so Unity rejects the vertices ("Mesh.vertices is too small") and then the colors ("Mesh.colors is out of bounds").
     /// Clears the mesh first so the new arrays are always accepted.
+    ///
+    /// The trail is built with MeshTopology.Quads. RimWorld 1.7's engine (Waylith) reads any non-triangle index list as
+    /// triangles, so the quads come out misaligned and only fragments of the trail are drawn. There each quad is split
+    /// into two triangles here, which is what Unity itself does internally before handing quads to the GPU.
     /// </summary>
     [HarmonyPatch(typeof(AM.Sweep.SweepMesh<AM.Sweep.PartWithSweep.Data>), nameof(AM.Sweep.SweepMesh<AM.Sweep.PartWithSweep.Data>.Rebuild))]
     public static class Patch_SweepMesh_Rebuild
     {
-        public static void Prefix(AM.Sweep.SweepMesh<AM.Sweep.PartWithSweep.Data> __instance)
+        private static readonly bool QuadsUnsupported = DetectQuadsUnsupported();
+
+        private static readonly AccessTools.FieldRef<AM.Sweep.SweepMesh<AM.Sweep.PartWithSweep.Data>, List<Vector3>> Vertices =
+            AccessTools.FieldRefAccess<AM.Sweep.SweepMesh<AM.Sweep.PartWithSweep.Data>, List<Vector3>>("vertices");
+        private static readonly AccessTools.FieldRef<AM.Sweep.SweepMesh<AM.Sweep.PartWithSweep.Data>, List<Color>> Colors =
+            AccessTools.FieldRefAccess<AM.Sweep.SweepMesh<AM.Sweep.PartWithSweep.Data>, List<Color>>("colors");
+        private static readonly AccessTools.FieldRef<AM.Sweep.SweepMesh<AM.Sweep.PartWithSweep.Data>, List<ushort>> Indices =
+            AccessTools.FieldRefAccess<AM.Sweep.SweepMesh<AM.Sweep.PartWithSweep.Data>, List<ushort>>("indices");
+
+        // Reused between calls; trails are only rebuilt on the main thread.
+        private static readonly List<int> triangles = new List<int>(384);
+
+        public static bool Prefix(AM.Sweep.SweepMesh<AM.Sweep.PartWithSweep.Data> __instance)
         {
-            __instance.Mesh.Clear();
+            Mesh mesh = __instance.Mesh;
+            mesh.Clear();
+            if (!QuadsUnsupported)
+                return true;
+
+            List<ushort> quads = Indices(__instance);
+            triangles.Clear();
+            for (int i = 0; i + 3 < quads.Count; i += 4)
+            {
+                int a = quads[i], b = quads[i + 1], c = quads[i + 2], d = quads[i + 3];
+                triangles.Add(a); triangles.Add(b); triangles.Add(c);
+                triangles.Add(a); triangles.Add(c); triangles.Add(d);
+            }
+            mesh.SetVertices(Vertices(__instance));
+            mesh.SetIndices(triangles, MeshTopology.Triangles, 0);
+            mesh.SetColors(Colors(__instance));
+            mesh.RecalculateNormals();
+            return false;
+        }
+
+        private static bool DetectQuadsUnsupported()
+        {
+            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                if (assembly.GetName().Name == "Waylith")
+                    return true;
+            }
+            return false;
         }
     }
 
