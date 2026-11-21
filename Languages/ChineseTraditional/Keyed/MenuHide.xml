@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideMenuWhenUndrafted>未徵召時隱藏右鍵選項</MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideMenuWhenUndrafted>
+  <MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideMenuWhenUndrafted.Desc>（Melee Animation Render Fix）選取的小人未徵召時，隱藏 Melee Animation 所有右鍵選項（套索、處決、技能）。\n不影響自動套索與自動處決。</MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideMenuWhenUndrafted.Desc>
+  <MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideUnavailableMenuOptions>隱藏無法使用的右鍵選項</MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideUnavailableMenuOptions>
+  <MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideUnavailableMenuOptions.Desc>（Melee Animation Render Fix）隱藏灰色的右鍵選項，例如「無法套索：…」「無法處決：…」。可以使用的選項照常顯示。</MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideUnavailableMenuOptions.Desc>
+  <MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideLassoMenuOptions>隱藏套索右鍵選項</MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideLassoMenuOptions>
+  <MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideLassoMenuOptions.Desc>（Melee Animation Render Fix）隱藏「套索…」右鍵選項。\n不影響自動套索。</MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideLassoMenuOptions.Desc>
+  <MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideExecutionMenuOptions>隱藏處決右鍵選項</MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideExecutionMenuOptions>
+  <MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideExecutionMenuOptions.Desc>（Melee Animation Render Fix）隱藏「處決…」右鍵選項。\n不影響自動處決；要整個關掉處決系統請用 Enable Executions。</MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideExecutionMenuOptions.Desc>
+  <MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideSkillMenuOptions>隱藏技能右鍵選項</MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideSkillMenuOptions>
+  <MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideSkillMenuOptions.Desc>（Melee Animation Render Fix）隱藏武器特殊技能的右鍵選項。</MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideSkillMenuOptions.Desc>
+</LanguageData>

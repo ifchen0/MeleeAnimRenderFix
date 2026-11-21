@@ -43,6 +43,12 @@ RimWorld 1.7:
 - Pawns bowed facing north before a friendly duel and one duelist's weapon vanished, because 1.7's newer Unity evaluates Melee Animation's stepped curve keys wrongly. They are now converted to flat keys with the same value. No change on 1.6.
 - Weapon trails were drawn only in short fragments on 1.7.5011 and later, because the new engine reads the trail's four-sided shapes as triangles. Each one is now split into two triangles before drawing. No change on 1.6.
 
+Right-click menu options (Melee Animation settings, Other tab, all off by default):
+- Hide all Melee Animation right-click options while the pawn is undrafted.
+- Hide unavailable (greyed-out) options such as "Cannot lasso" / "Cannot execute".
+- Hide lasso, execution or weapon skill options separately.
+Automatic lassos and executions are not affected.
+
 Minor log cleanups:
 - "AM.Events.XxxEvent must be instantiated using the ScriptableObject.CreateInstance method": animation events are now created with ScriptableObject.CreateInstance.
 - "[MeleeAnim] Started twice!" when loading a save with an animation in progress: the redundant start call is skipped quietly.

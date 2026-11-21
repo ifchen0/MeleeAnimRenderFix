@@ -49,6 +49,14 @@ Note: most of the stutter while any right-click menu is open comes from vanilla 
 
 [b]Fix:[/b] On 1.7, each shape is split into two triangles before the trail is drawn. No change on 1.6.
 
+[h2]Right-click menu options[/h2]Melee Animation adds lasso, execution and weapon skill entries to the right-click menu whenever a single colonist is selected, drafted or not, including greyed-out "Cannot lasso" / "Cannot execute" lines. New toggles in Melee Animation's own settings ([i]Other[/i] tab, all off by default) can hide them:
+[list]
+[*][b]Hide Menu Options When Undrafted[/b]: no Melee Animation entries unless the pawn is drafted.
+[*][b]Hide Unavailable Menu Options[/b]: only the greyed-out entries are hidden.
+[*][b]Hide Lasso / Execution / Skill Menu Options[/b]: hide each kind separately.
+[/list]
+Automatic lassos and executions are not affected; to turn executions off completely, use Melee Animation's [i]Enable Executions[/i].
+
 [h2]Minor log cleanups[/h2][list]
 [*]"AM.Events.XxxEvent must be instantiated using the ScriptableObject.CreateInstance method": animation events are now created with [i]ScriptableObject.CreateInstance[/i].
 [*]"[MeleeAnim] Started twice!" when loading a save with an animation in progress: the redundant start call is skipped quietly.

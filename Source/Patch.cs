@@ -31,6 +31,7 @@ namespace MeleeAnimRenderFix
                 }
             }
             EventFactoryFix.Apply();
+            MenuHideSettings.Inject();
         }
     }
 

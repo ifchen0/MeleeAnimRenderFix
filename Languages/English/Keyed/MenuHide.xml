@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideMenuWhenUndrafted>Hide Menu Options When Undrafted</MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideMenuWhenUndrafted>
+  <MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideMenuWhenUndrafted.Desc>(Melee Animation Render Fix) Hides every Melee Animation right-click option (lasso, execute, skills) unless the selected pawn is drafted.\nAutomatic lassos and executions are not affected.</MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideMenuWhenUndrafted.Desc>
+  <MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideUnavailableMenuOptions>Hide Unavailable Menu Options</MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideUnavailableMenuOptions>
+  <MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideUnavailableMenuOptions.Desc>(Melee Animation Render Fix) Hides greyed-out right-click options such as "Cannot lasso: ..." and "Cannot execute: ...". Options that can be used still show.</MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideUnavailableMenuOptions.Desc>
+  <MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideLassoMenuOptions>Hide Lasso Menu Options</MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideLassoMenuOptions>
+  <MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideLassoMenuOptions.Desc>(Melee Animation Render Fix) Hides the "Lasso ..." right-click options.\nAutomatic lassos are not affected.</MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideLassoMenuOptions.Desc>
+  <MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideExecutionMenuOptions>Hide Execution Menu Options</MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideExecutionMenuOptions>
+  <MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideExecutionMenuOptions.Desc>(Melee Animation Render Fix) Hides the "Execute ..." right-click options.\nAutomatic executions are not affected; use Enable Executions to turn the whole system off.</MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideExecutionMenuOptions.Desc>
+  <MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideSkillMenuOptions>Hide Skill Menu Options</MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideSkillMenuOptions>
+  <MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideSkillMenuOptions.Desc>(Melee Animation Render Fix) Hides the weapon skill right-click options (unique skills).</MeleeAnimRenderFix.MenuHideSettings.RenderFix_HideSkillMenuOptions.Desc>
+</LanguageData>
