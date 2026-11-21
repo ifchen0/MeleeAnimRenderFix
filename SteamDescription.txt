@@ -41,9 +41,9 @@ Note: most of the stutter while any right-click menu is open comes from vanilla 
 
 [b]Fix:[/b] Pawns that are part of a ritual, gathering or other group activity are no longer chosen for automatic friendly duels. Duels you start yourself are unchanged.
 
-[h2]RimWorld 1.7: duel bow faces north, weapon disappears[/h2]On 1.7, pawns bowed facing north before a friendly duel, and one duelist's weapon vanished during the duel. Melee Animation stores fixed facing and visibility as stepped curve keys, which 1.7's newer Unity evaluates wrongly.
+[h2]RimWorld 1.7: pawns face north, weapons disappear[/h2]On 1.7, pawns turned to face north in duels (bow, duel loss) and some executions, and weapons or other parts blinked or vanished. Melee Animation stores facing and visibility as stepped curve keys, which the 1.7 engine evaluates as invalid numbers.
 
-[b]Fix:[/b] Those keys are converted to flat ones with the same value when an animation loads. No change on 1.6.
+[b]Fix:[/b] Stepped keys hold their value until the next key, as in Unity. No change on 1.6.
 
 [h2]RimWorld 1.7: weapon trails look short[/h2]Since RimWorld 1.7.5011, weapon trails were drawn only in short fragments. Melee Animation builds trails from four-sided shapes, and the new 1.7 engine reads them as triangles, so most of the trail ends up misaligned.
 

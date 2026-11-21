@@ -40,7 +40,7 @@ Automatic friendly duels:
 - Pawns busy with a ritual, gathering or other group activity are no longer pulled into an automatic friendly duel. A psychic ritual invoker taken away dropped the offering and the ritual failed.
 
 RimWorld 1.7:
-- Pawns bowed facing north before a friendly duel and one duelist's weapon vanished, because 1.7's newer Unity evaluates Melee Animation's stepped curve keys wrongly. They are now converted to flat keys with the same value. No change on 1.6.
+- Pawns faced north in duels (bow, duel loss) and some executions, and weapons or other parts blinked or vanished, because the 1.7 engine evaluates Melee Animation's stepped curve keys as invalid numbers. Stepped keys now hold their value until the next key, as in Unity. No change on 1.6.
 - Weapon trails were drawn only in short fragments on 1.7.5011 and later, because the new engine reads the trail's four-sided shapes as triangles. Each one is now split into two triangles before drawing. No change on 1.6.
 
 Right-click menu options (Melee Animation settings, Other tab, all off by default):

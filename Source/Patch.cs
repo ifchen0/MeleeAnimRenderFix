@@ -476,44 +476,38 @@ namespace MeleeAnimRenderFix
     }
 
     /// <summary>
-    /// Melee Animation's exported curves hold constant values (facing, part visibility) as stepped keys with infinite
-    /// tangents. On RimWorld 1.7's Unity a stepped segment between two equal values no longer evaluates to that value,
-    /// so the duel bow faces north (direction 0) and the second duelist's weapon is hidden (active below 0.5).
-    /// Gives those segments flat tangents instead, which evaluate to the same constant on any Unity version.
+    /// Melee Animation's exported curves hold facing, part visibility, draw layering and flips as stepped keys
+    /// (infinite tangents). RimWorld 1.7's engine (Waylith) ships its own AnimationCurve whose Evaluate always does
+    /// Hermite interpolation, so every stepped segment comes out as NaN: the facing then reads as 0 (north) and parts
+    /// blink or vanish. When the result is not finite, returns what Unity returns for a stepped segment instead: the
+    /// value of the left key. Only applies where AnimationCurve is managed code (Waylith); on 1.6 Unity handles it.
     /// </summary>
-    [HarmonyPatch(typeof(AM.Data.Model.CurveModel), nameof(AM.Data.Model.CurveModel.ToAnimationCurve))]
-    public static class Patch_CurveModel_ToAnimationCurve
+    [HarmonyPatch(typeof(AnimationCurve), nameof(AnimationCurve.Evaluate))]
+    public static class Patch_AnimationCurve_Evaluate
     {
-        private static int flattened;
-        private static int misEvaluated;
-        private static int lastLoggedFrame = -1;
+        private static readonly FieldInfo KeysField = AccessTools.Field(typeof(AnimationCurve), "_keys");
+        private static readonly AccessTools.FieldRef<AnimationCurve, List<UnityEngine.Keyframe>> Keys =
+            KeysField != null && KeysField.FieldType == typeof(List<UnityEngine.Keyframe>)
+                ? AccessTools.FieldRefAccess<AnimationCurve, List<UnityEngine.Keyframe>>(KeysField)
+                : null;
 
-        public static void Postfix(AnimationCurve __result)
+        public static bool Prepare() => Keys != null;
+
+        public static void Postfix(AnimationCurve __instance, float time, ref float __result)
         {
-            UnityEngine.Keyframe[] keys = __result.keys;
-            bool changed = false;
-            for (int i = 0; i + 1 < keys.Length; i++)
-            {
-                if (!float.IsInfinity(keys[i].outTangent) || keys[i].value != keys[i + 1].value)
-                    continue;
-                float mid = (keys[i].time + keys[i + 1].time) * 0.5f;
-                if (__result.Evaluate(mid) != keys[i].value)
-                    misEvaluated++;
-                keys[i].outTangent = 0f;
-                keys[i + 1].inTangent = 0f;
-                flattened++;
-                changed = true;
-            }
-            if (!changed)
+            if (!float.IsNaN(__result) && !float.IsInfinity(__result))
                 return;
-            __result.keys = keys;
-
-            // Animations load lazily, so report once per frame rather than once per curve.
-            if (lastLoggedFrame != Time.frameCount)
+            List<UnityEngine.Keyframe> keys = Keys(__instance);
+            int last = keys.Count - 2;
+            for (int i = 0; i <= last; i++)
             {
-                lastLoggedFrame = Time.frameCount;
-                LongEventHandler.ExecuteWhenFinished(() =>
-                    Log.Message($"[Melee Animation Render Fix] Flattened {flattened} stepped curve segments so far ({misEvaluated} evaluated wrong before)."));
+                UnityEngine.Keyframe left = keys[i];
+                UnityEngine.Keyframe right = keys[i + 1];
+                if (time >= right.time && i != last)
+                    continue;
+                if (float.IsInfinity(left.outTangent) || float.IsInfinity(right.inTangent))
+                    __result = left.value;
+                return;
             }
         }
     }
